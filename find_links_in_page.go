@@ -7,11 +7,20 @@ import (
     "log"
     "net/http"
     "regexp"
+    "os"
 )
 
 func main() {
+    if len(os.Args) != 3{
+        fmt.Printf("Usage : %s <url> <regexp>\n", os.Args[0])
+        os.Exit(0)
+    }
+
+    url := os.Args[1] //"https://nvd.nist.gov/vuln/data-feeds#JSON_FEED"
+    useregexp := os.Args[2] //'nvdcve-1.1-[0-9]*\.json\.zip'
+   
     // Make HTTP request
-    response, err := http.Get("https://nvd.nist.gov/vuln/data-feeds#JSON_FEED")
+    response, err := http.Get(url)
     if err != nil {
         log.Fatal(err)
     }
@@ -24,7 +33,8 @@ func main() {
     }
 
     // Create a regular expression to find comments
-    re := regexp.MustCompile(`nvdcve-1.1-[0-9]*\.json\.zip`)
+    //nvdcve-1.1-[0-9]*\.json\.zip
+    re := regexp.MustCompile(useregexp)
     comments := re.FindAllString(string(body), -1)
     if comments == nil {
         fmt.Println("No matches.")
