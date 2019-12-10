@@ -18,8 +18,7 @@ func downloadFromUrl(dirName string, url string) {
 	tokens := strings.Split(url, "/")
 	fileName := tokens[len(tokens)-1]
 	fmt.Println("Downloading", url, "to", fileName)
-
-	// Call create-directory microservice
+	
     if dirName != "" {
 		path := filepath.Join(dirName, fileName)
 		output, err := os.Create(path)
@@ -86,18 +85,21 @@ func downloadFromUrl(dirName string, url string) {
 // }
 
 func main() {
-	if len(os.Args) != 2 {
-		fmt.Printf("Usage : %s <directory>\n", os.Args[0])
+	if len(os.Args) != 4 {
+		// go run download-files.go "downloads" "https://nvd.nist.gov/vuln/data-feeds#JSON_FEED" 'nvdcve-1.1-[0-9]*\.json\.zip'
+		fmt.Printf("Usage : %s <directory> <url> <regexp>\n", os.Args[0])
 		os.Exit(0)
 	}
 
 	directory := os.Args[1]
+	url := os.Args[2]
+	useregexp := os.Args[3]
 
 	// Call microservice for creating directory
 	dirService := "../../bin/create-directory"
-	args := []string{directory}
+	//args := []string{directory}
 
-	result := exec.Command(dirService, args...)
+	result := exec.Command(dirService, directory)
 
 	err := result.Start()
 	if err != nil {
@@ -108,7 +110,7 @@ func main() {
 
 	// Call microservice for finding links on page
     linksService := "../../bin/find_links_in_page"
-    cmd := exec.Command(linksService)
+    cmd := exec.Command(linksService, url, useregexp)
 
     stdout, _ := cmd.StdoutPipe()
     cmd.Start()
